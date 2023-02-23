@@ -1,0 +1,4 @@
+*.log
+*.err
+*.out
+/work/opa/visir-dev/frame/operationalScript/singleBash
