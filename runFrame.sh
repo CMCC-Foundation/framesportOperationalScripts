@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ~/.bash_profile
+
 ##########################################
 #
 # Help message
@@ -45,7 +47,11 @@ PESI_EXE=${PESI_PATH}/MAIN_Pesi.py
 VISUAL_PATH=${VISIR2_BASE_PATH}/Visualizzazioni
 VISUAL_EXE=${VISUAL_PATH}/MAIN_OP.py
 
+CSV2SHAPE_PATH=${VISIR2_BASE_PATH}/
+CSV2SHAPE_EXE=${CSV2SHAPE_PATH}/csv2shape.sh
 
+LOCALLINK_PATH=${VISIR2_BASE_PATH}/
+LOCALLINK_EXE=${LOCALLINK_PATH}/localLink.sh
 
 POSTPROC_PATH=${VISIR2_BASE_PATH}/PostProc/
 POSTPROC_EXE=${POSTPROC_PATH}/MAIN_PostProc.py
@@ -53,8 +59,6 @@ POSTPROC_EXE=${POSTPROC_PATH}/MAIN_PostProc.py
 
 echo "_---------------------"
 echo "$APPNAME --- Inputs To add after "
-# echo $1
-# echo $2
 echo "_---------------------"
 
 # define the routes
@@ -198,32 +202,32 @@ if [[ $COMP == "" ]] || [[ $COMP == "Tracce" ]]; then
 fi
 
 
-# ##########################################
-# #
-# # Visualizzazioni
-# #
-# ##########################################
+##########################################
+#
+# Visualizzazioni
+#
+##########################################
 
-# if [[ $COMP == "" ]] || [[ $COMP == "Visualizzazioni" ]]; then
+if [[ $COMP == "" ]] || [[ $COMP == "Visualizzazioni" ]]; then
 
-#     echo -e "\n\n===== Visualizzazioni [requested on $(date)] ====="
-#     comp_name="visual"
-#     VISUAL_SEQ=44 #44
-#     cd $VISUAL_PATH
+    echo -e "\n\n===== Visualizzazioni [requested on $(date)] ====="
+    comp_name="visual"
+    VISUAL_SEQ=44 #44
+    cd $VISUAL_PATH
     
-#     if [[ $COMP == "Visualizzazioni" ]]; then
-# 	    echo "$APPNAME ---  Component $COMP launched alone, without job dependency"
-# 	    VISUAL_JOBID=$(bsub -R "rusage[mem=16G]" -ptl 720 -q s_long -P 0338  -J "FRM_Vis[1-${VISUAL_SEQ}]" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err  "configfile=${CONF_PATH} python $VISUAL_EXE $RUNDATE ${LSB_JOBINDEX}" &)
+    if [[ $COMP == "Visualizzazioni" ]]; then
+	    echo "$APPNAME ---  Component $COMP launched alone, without job dependency"
+	    VISUAL_JOBID=$(bsub -R "rusage[mem=16G]" -ptl 720 -q s_long -P 0338  -J "FRM_Vis[1-${VISUAL_SEQ}]" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err  "configfile=${CONF_PATH} python $VISUAL_EXE $RUNDATE ${LSB_JOBINDEX}" &)
 	
-#     else
+    else
 	   
-#         echo "$APPNAME ---  Component ${comp_name} launched with job dependency after TRACCE"
-#         echo "bsub  -ptl 720 -q s_long -P 0338  -w \"done(${TRACCE_JOBID})\" -J \"FRM_Vis[1-${VISUAL_SEQ}]\" -o ${LOGS_PATH}/out/visual_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/visual_$(date +%Y%m%d-%H%M)_%J.err  \"configfile=${CONF_PATH} python $VISUAL_EXE $RUNDATE  ${LSB_JOBINDEX}\""
-# 	    VISUAL_JOBID=$(bsub -R "rusage[mem=16G]" -ptl 720 -q s_long -P 0338  -w "done(${TRACCE_JOBID})" -J "FRM_Vis[1-${VISUAL_SEQ}]" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err  "configfile=${CONF_PATH} python $VISUAL_EXE $RUNDATE  ${LSB_JOBINDEX}" &)
+        echo "$APPNAME ---  Component ${comp_name} launched with job dependency after TRACCE"
+        echo "bsub  -ptl 720 -q s_long -P 0338  -w \"done(${TRACCE_JOBID})\" -J \"FRM_Vis[1-${VISUAL_SEQ}]\" -o ${LOGS_PATH}/out/visual_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/visual_$(date +%Y%m%d-%H%M)_%J.err  \"configfile=${CONF_PATH} python $VISUAL_EXE $RUNDATE  ${LSB_JOBINDEX}\""
+	    VISUAL_JOBID=$(bsub -R "rusage[mem=16G]" -ptl 720 -q s_long -P 0338  -w "done(${TRACCE_JOBID})" -J "FRM_Vis[1-${VISUAL_SEQ}]" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err  "configfile=${CONF_PATH} python $VISUAL_EXE $RUNDATE  ${LSB_JOBINDEX}" &)
 
-#     fi    
+    fi    
     
-# fi
+fi
 
 ##########################################
 #
@@ -255,15 +259,64 @@ if [[ $COMP == "" ]] || [[ $COMP == "Postproc" ]]; then
 fi
 
 
+##########################################
+#
+# Local link to latestProduction
+#
+##########################################
+
+if [[ $COMP == "" ]] || [[ $COMP == "localLink.sh" ]]; then
+    
+    echo "===== localLink [requested on $(date)] ====="
+    cd $LOCALLINK_PATH/
+    
+    # Linking to latest production
+    if [[ $COMP == "localLink.sh" ]]; then
+	
+	# submit the job without job dependency since
+	# we only want to run localLink.sh
+	LOCALLINK_JOBID=$(bsub -ptl 720 -R "span[ptile=1]" -q s_medium -P 0338 -o ${OP_PATH}/logs/out/localLink_$(date +%Y%m%d-%H%M)_%J.out -e ${OP_PATH}/logs/err/localLink_$(date +%Y%m%d-%H%M)_%J.err -J 'FRM_localLink' "sh ${LOCALLINK_EXE} ${RUNDATE}" &)	
+	
+    else
+	
+	# invoke the job
+	LOCALLINK_JOBID=$(bsub -ptl 720 -R "span[ptile=1]" -q s_medium -P 0338 -w "done($VISUAL_JOBID)" -o ${OP_PATH}/logs/out/localLink_$(date +%Y%m%d-%H%M)_%J.out -e ${OP_PATH}/logs/err/localLink_$(date +%Y%m%d-%H%M)_%J.err -J 'FRM_localLink' "sh ${LOCALLINK_EXE} ${RUNDATE}" &)	
+	
+    fi
+fi
 
 
-# ##########################################
-# #
-# # Create link on N08
-# #
+##########################################
+#
+# Csv 2 shape
+#
+##########################################
+
+if [[ $COMP == "" ]] || [[ $COMP == "csv2shape.sh" ]]; then
+
+    echo "===== csv2shape [requested on $(date)] ====="
+    cd $CSV2SHAPE_PATH/
+
+    if [[ $COMP == "csv2shape.sh" ]]; then
+    
+	# Submit csv2shape job array without job dependencies
+	# since we only want csv2shape 
+	CSV_JOBID=$(bsub -ptl 720 -R "span[ptile=1]" -q s_long -P 0338 -J 'FRM_csv2shape' -o ${OP_PATH}/logs/out/csv2shape_$(date +%Y%m%d-%H%M)_%J.log -e ${OP_PATH}/logs/err/csv2shape_$(date +%Y%m%d-%H%M)_%J.err "sh ${CSV2SHAPE_EXE} $RUNDATE" &)
+
+	
+    else
+
+	# Submit csv2shape job array
+	CSV_JOBID=$(bsub -ptl 720 -R "span[ptile=1]" -q s_long -P 0338 -w "done($LOCALLINK_JOBID)" -J 'FRM_csv2shape' -o ${OP_PATH}/logs/out/csv2shape_$(date +%Y%m%d-%H%M)_%J.log -e ${OP_PATH}/logs/err/csv2shape_$(date +%Y%m%d-%H%M)_%J.err "sh ${CSV2SHAPE_EXE} $RUNDATE" &)
+
+    fi
+fi
+
+
+##########################################
+#
+# The End.
+#
 # ##########################################
 
 echo "$APPNAME --- Script end." 
-
-# How to launch:
-# bash /work/opa/visir-dev/frame/operationalScript/runFrame.sh 20230214_04 Tracce > /work/opa/visir-dev/frame/operationalScript/logs/out/runFrame_$(date +"%Y%m%d_%H%M").out 2> /work/opa/visir-dev/frame/operationalScript/logs/err/runFrame_$(date +"%Y%m%d_%H%M").err &
