@@ -61,9 +61,6 @@ echo "_---------------------"
 echo "$APPNAME --- Inputs To add after "
 echo "_---------------------"
 
-# define the routes
-# ROUTES=('ALDRZ_ITBDS' 'ALDRZ_ITBRI' 'GRGPA_ITBDS' 'GRIGO_ITBDS' 'HRDBV_ITAOI' 'HRDBV_ITBDS' 'HRDBV_ITBRI' 'HRRJK_ITAOI' 'HRSPU_ITAOI' 'HRSPU_ITBRI' 'HRZAD_ITAOI' 'HRZAD_ITBLT' 'HRZAD_ITRAN' 'ITAOI_HRDBV' 'ITAOI_HRRJK' 'ITAOI_HRSPU' 'ITAOI_HRZAD' 'ITBDS_ALDRZ' 'ITBDS_GRGPA' 'ITBDS_GRIGO' 'ITBDS_HRDBV' 'ITBDS_MEBAR' 'ITBLT_HRZAD' 'ITBRI_ALDRZ' 'ITBRI_HRDBV' 'ITBRI_HRSPU' 'ITBRI_MEBAR' 'ITRAN_HRZAD' 'MEBAR_ITBDS' 'MEBAR_ITBRI')
-
 
 ##########################################
 #
@@ -94,7 +91,7 @@ bsub () {
 ########################################## 
 
 # source profile
-# source ~/.bash_profile
+source ~/.bash_profile
 
 # module load
 source ~/.bash_anaconda_3.7 
@@ -109,7 +106,7 @@ export PYTHONPATH="${VISIR2_BASE_PATH}"
 RUNDATE=$1  #"20230202_04"
 COMP=$2
 
-APPNAME="[Run FrameSport]"
+APPNAME="[FrameSport]"
 
 
 ##########################################
@@ -118,7 +115,7 @@ APPNAME="[Run FrameSport]"
 #
 ########################################## 
 
-if [[ $COMP == "" ]] || [[ $COMP == "Campi" ]]; then
+if [[ -z $COMP ]] || [[ $COMP == "Campi" ]]; then
 
     echo -e "\n===== Campi [requested on $(date)] ====="
     
@@ -141,7 +138,7 @@ fi
 #
 ########################################## 
 
-if [[ $COMP == "" ]] || [[ $COMP == "Pesi" ]]; then
+if [[ -z $COMP ]] || [[ $COMP == "Pesi" ]]; then
 
     echo -e "\n\n===== Pesi [requested on $(date)] ====="
     
@@ -173,7 +170,7 @@ fi
 #
 ##########################################
 
-if [[ $COMP == "" ]] || [[ $COMP == "Tracce" ]]; then
+if [[ -z $COMP ]] || [[ $COMP == "Tracce" ]]; then
 
     echo -e "\n\n===== Tracce [requested on $(date)] ====="
     comp_name="tracce"
@@ -208,7 +205,7 @@ fi
 #
 ##########################################
 
-if [[ $COMP == "" ]] || [[ $COMP == "Visualizzazioni" ]]; then
+if [[ -z $COMP ]] || [[ $COMP == "Visualizzazioni" ]]; then
 
     echo -e "\n\n===== Visualizzazioni [requested on $(date)] ====="
     comp_name="visual"
@@ -235,9 +232,7 @@ fi
 #
 ##########################################
 
-
-
-if [[ $COMP == "" ]] || [[ $COMP == "Postproc" ]]; then
+if [[ -z $COMP ]] || [[ $COMP == "Postproc" ]]; then
 
     echo -e "\n\n===== Postproc [requested on $(date)] ====="
     comp_name="Postproc"
@@ -265,7 +260,7 @@ fi
 #
 ##########################################
 
-if [[ $COMP == "" ]] || [[ $COMP == "localLink.sh" ]]; then
+if [[ -z $COMP ]] || [[ $COMP == "localLink.sh" ]]; then
     
     echo "===== localLink [requested on $(date)] ====="
     cd $LOCALLINK_PATH/
@@ -292,7 +287,7 @@ fi
 #
 ##########################################
 
-if [[ $COMP == "" ]] || [[ $COMP == "csv2shape.sh" ]]; then
+if [[ -z $COMP ]] || [[ $COMP == "csv2shape.sh" ]]; then
 
     echo "===== csv2shape [requested on $(date)] ====="
     cd $CSV2SHAPE_PATH/
@@ -302,7 +297,6 @@ if [[ $COMP == "" ]] || [[ $COMP == "csv2shape.sh" ]]; then
 	# Submit csv2shape job array without job dependencies
 	# since we only want csv2shape 
 	CSV_JOBID=$(bsub -ptl 720 -R "span[ptile=1]" -q s_long -P 0338 -J 'FRM_csv2shape' -o ${OP_PATH}/logs/out/csv2shape_$(date +%Y%m%d-%H%M)_%J.log -e ${OP_PATH}/logs/err/csv2shape_$(date +%Y%m%d-%H%M)_%J.err "sh ${CSV2SHAPE_EXE} $RUNDATE" &)
-
 	
     else
 
@@ -317,6 +311,6 @@ fi
 #
 # The End.
 #
-# ##########################################
+##########################################
 
 echo "$APPNAME --- Script end." 
