@@ -69,7 +69,7 @@ done
 if [[ ! -z ${OUT_LOGS_DIR} ]] && [[ ! -z ${ERR_LOGS_DIR} ]] ; then 
     # if the paths  exist and are all defined rolling logs 
     echo "OUT_LOGS_DIR=${OUT_LOGS_DIR}, ERR_LOGS_DIR=${ERR_LOGS_DIR} are defined."
-    LOGS_REM="find ${OUT_LOGS_DIR} ${ERR_LOGS_DIR}  ${CAMIDDLE} -not -name .keep  -not -name ${PRESERVE_FILE} -type f -exec echo -v {} \; "  # rm -rf or echo 
+    LOGS_REM="find ${OUT_LOGS_DIR} ${ERR_LOGS_DIR}  ${CAMIDDLE} -not -name .keep  -not -name ${PRESERVE_FILE} -type f -exec rm -rf -v {} \; "  # rm -rf or echo 
     echo "READING files..."
     eval $LOGS_REM
 
@@ -82,7 +82,7 @@ fi
 if [[ ! -z ${CHECK_LOGS_DIR} ]] ; then 
     # if the paths  exist and are all defined rolling logs 
     echo "CHECK_LOGS_DIR=${CHECK_LOGS_DIR} defined."
-    LOGS_REM="find ${CHECK_LOGS_DIR}  -not -name .keep  -mtime +1 -type f -exec echo -v {} \; "  # rm -rf
+    LOGS_REM="find ${CHECK_LOGS_DIR}  -not -name .keep  -mtime +1 -type f -exec rm -rf -v {} \; "  # rm -rf
     echo "READING files..."
     eval $LOGS_REM
 
@@ -102,7 +102,7 @@ fi
 echo "=== Rolling ${DYNAMIC_DATA} ==="
 
 echo "Find Campi and Visualizzazioni folder in ${DYNAMIC_DATA} older than $DAYS_TO_PRESERVE days"
-DATA_DIR_REM="find ${DYNAMIC_DATA} -maxdepth 3  -mindepth 3  -not -name 'Tracce' -mtime +31 -type d -exec echo -v {} \; "   # rm -rf or echo
+DATA_DIR_REM="find ${DYNAMIC_DATA} -maxdepth 3  -mindepth 3  -not -name 'Tracce' -mtime +31 -type d -exec rm -rf -v {} \; "   # rm -rf or echo
 #DATA_DIR_REM="find ${DYNAMIC_DATA} -maxdepth 3  -mindepth 3  -not -name 'Tracce' -mtime +31 -type d  | xargs rm -r"
 echo "and delete ..."
 eval $DATA_DIR_REM
