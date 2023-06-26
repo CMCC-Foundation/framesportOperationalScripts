@@ -12,13 +12,14 @@ OP_PATH=/work/opa/visir-dev/frame/operationalScript/
 LOG_PATH=$OP_PATH/logs/out
 ERR_PATH=$OP_PATH/logs/err
 
-	
+
 ##########################################
 #
 # Telegram configuration file
 #
 ########################################## 
-
+# Notify 0 "Check" "2 message" # error message
+# Notify 1 "Check" "3 message" # good message
 
 ##########################################
 #
@@ -55,9 +56,6 @@ if [[ -e ${LOG_PATH}/last_job_notified.log ]] ; then
 	fi
 fi
 
-# Notify 0 "Check" "2 message" # error
-# Notify 1 "Check" "3 message" # good
-
 # check if all the components stopped running
 for COMP in ${COMPONENTS[@]}; do
 	echo "Analyzing $COMP ..."
@@ -65,8 +63,8 @@ for COMP in ${COMPONENTS[@]}; do
 	LOG=$(find ${LOG_PATH} -name ${COMP}_${LASTRUN}-\* | head -n 1)
     ERR=$(find ${ERR_PATH} -name ${COMP}_${LASTRUN}-\* | head -n 1)
 
-	# echo "LOG file is $LOG"
-	# echo "ERR file is $ERR"	
+	echo "LOG file is $LOG"
+	echo "ERR file is $ERR"	
 
 	if [[ ! -z "$LOG"  ]] ; then
 		# get termination signals for the component
@@ -134,6 +132,11 @@ for COMP in ${COMPONENTS[@]}; do
 			echo "ELSE"
 			;;
 		esac
+	else 
+
+		echo "LOG file not ready yet."
+		echo "job still to complete! Exiting..."
+		exit
 	fi
 
 done
@@ -150,11 +153,9 @@ for COMP in ${COMPONENTS[@]}; do
     echo $LOG
     echo $ERR
     
-    
 	echo "update ${LOG_PATH}/last_job_notified.log with $LASTRUN"
 	echo $LASTRUN > ${LOG_PATH}/last_job_notified.log
-
-
+    
     # do the analysis
     echo " - Analysing component $COMP"    
     ERRORS_LINE=$(wc -l $ERR | cut -f 1 -d " ")
@@ -198,3 +199,5 @@ for COMP in ${COMPONENTS[@]}; do
 
 done
 
+
+echo "Finish check now $(date)"
