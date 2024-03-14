@@ -1,5 +1,6 @@
 #!/bin/bash
 
+source ~/.bash_profile
 ##########################################
 #
 # Paths and routes
@@ -26,7 +27,7 @@ ERR_PATH=$OP_PATH/logs/err
 # Load utils
 #
 ########################################## 
-
+echo "source ${OP_PATH}/utils.sh"
 source ${OP_PATH}/utils.sh
 
 
@@ -134,9 +135,51 @@ for COMP in ${COMPONENTS[@]}; do
 		esac
 	else 
 
-		echo "LOG file not ready yet."
-		echo "job still to complete! Exiting..."
-		exit
+		echo "LOG file not ready."
+		# JOBS=$(bjobs )#| wc -l)
+
+
+		JOBS=$(bjobs -o "JOB_NAME" -noheader | grep -v grep | wc -l )
+		JOBS_RUN=$(bjobs -o "STAT" -noheader | grep RUN | wc -l )
+		JOBS_PEND=$(bjobs -o "STAT" -noheader | grep PEND | wc -l ) 
+		echo "JOBS are $JOBS"
+		echo "Running jobs are $JOBS_RUN"
+		echo "Pending jobs are $JOBS_PEND"
+
+		if [[ "$JOBS_RUN" -ge "1" ]] ; then
+			echo " -- Because job still in progress ($JOBS_RUN)"
+			exit
+		else
+			# if [[ "$JOBS_PEND" -ge "1" ]]; then 
+			# 	echo " -- Because jobs are in PENDING."
+			# 	echo "Let's see the components."
+			# else 
+			# 	echo " -- Because no jobs in the crontab"			
+			# 	exit
+			# fi  
+
+			# if there are pending jobs, see the previous job if end SUCCESFULLY or NOT. 
+			# IF PREV JOB END SUCCES -> wait 
+			# IF PREV JOB END WITH EXIT -> send notify
+
+			if [[ "$JOBS_PEND" -ge "1" ]]; then 
+
+				PREV_JOB=$(bjobs -a | tail -n 1 | grep "DONE" | wc -l)
+				if [[ "$PREV_JOB" -ge "1"   ]] ; then
+					echo " -- Previous job ended succesfully, waiting the end of the pending jobs ($JOBS_PEND)."			
+					exit
+				else
+					echo " -- Previous job ended with an error. Send notify."
+					echo "Let's see the components."
+				fi
+				
+			else 
+				echo " -- Because there are no jobs to do"			
+				exit
+			fi  
+			
+		fi
+
 	fi
 
 done

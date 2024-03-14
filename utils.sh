@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # read configuration file
-source $HOME/.telegramrc
-
+# source $HOME/.telegramrc
+source /users_home/opa/visir-dev/.telegramrc_frame
 
 ####################################################
 #
@@ -27,17 +27,17 @@ Notify() {
 
     echo "[$APPNAME] $msg" 2>&1 | tee -a $LOGFILE
     if [[ $msgType -eq 0 ]]; then
-	if [[ ${TELEGRAM_ENABLED} ]]; then
+	    if [[ ${TELEGRAM_ENABLED} ]]; then
             sh ${TELEGRAM_EXE} -t ${TELEGRAM_TOKEN} -c ${TELEGRAM_CHANNEL} "[$app] $(echo -e '\U0000274C') $msg"
-	fi
+	    fi
     elif [[ $msgType -eq 1 ]]; then
-	if [[ ${TELEGRAM_ENABLED} ]]; then
-            sh ${TELEGRAM_EXE} -t ${TELEGRAM_TOKEN} -c ${TELEGRAM_CHANNEL} "[$app]  $(echo -e '\U0001F7E2') $msg"        
-	fi
+        if [[ ${TELEGRAM_ENABLED} ]]; then
+                sh ${TELEGRAM_EXE} -t ${TELEGRAM_TOKEN} -c ${TELEGRAM_CHANNEL} "[$app]  $(echo -e '\U0001F7E2') $msg"        
+        fi
     elif [[ $msgType -eq 2 ]]; then
-	if [[ ${TELEGRAM_ENABLED} ]]; then
-            sh ${TELEGRAM_EXE} -t ${TELEGRAM_TOKEN} -c ${TELEGRAM_CHANNEL} "[$app]  $(echo -e '\U00002699') $msg"        
-	fi	
+        if [[ ${TELEGRAM_ENABLED} ]]; then
+                sh ${TELEGRAM_EXE} -t ${TELEGRAM_TOKEN} -c ${TELEGRAM_CHANNEL} "[$app]  $(echo -e '\U00002699') $msg"        
+        fi	
     fi
 
 }
