@@ -7,7 +7,7 @@
 ########################################## 
 
 # paths and conf
-source $HOME/frame.conf
+source $HOME/frame_JUNO.conf
 
 ##########################################
 #
