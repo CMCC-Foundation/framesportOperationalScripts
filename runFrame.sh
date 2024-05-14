@@ -28,38 +28,36 @@ fi
 ########################################## 
 
 # paths
-VISIR2_BASE_PATH="/work/opa/visir-dev/frame/visir-2/"
-OPERATIONAL_SCRIPT_PATH="/work/opa/visir-dev/frame/operationalScript/"
+BASE_PATH="/users_home/cmcc/framevisir-dev/"
+VISIR2_BASE_PATH=${BASE_PATH}/VISIR-2/
+OPERATIONAL_SCRIPT_PATH=${BASE_PATH}/framesportOperationalScripts/
+OPERATIONAL_SCRIPT_LOGS="/work/cmcc/framevisir-dev/framesportOperationalScripts_logs"
+LOGS_PATH=${OPERATIONAL_SCRIPT_LOGS}
 
-LOGS_PATH=${OPERATIONAL_SCRIPT_PATH}/logs/
-
+echo "$VISIR2_BASE_PATH"
 CONF_PATH=${VISIR2_BASE_PATH}/config/DirPaths_DEV.yaml
 
-CAMPI_PATH=${VISIR2_BASE_PATH}/Campi
+CAMPI_PATH=${VISIR2_BASE_PATH}/_b_Campi
 CAMPI_EXE=${CAMPI_PATH}/MAIN_Campi.py
 
-TRACCE_PATH=${VISIR2_BASE_PATH}/Tracce
+TRACCE_PATH=${VISIR2_BASE_PATH}/_d_Tracce
 TRACCE_EXE=${TRACCE_PATH}/MAIN_Tracce.py
 
-PESI_PATH=${VISIR2_BASE_PATH}/Pesi
+PESI_PATH=${VISIR2_BASE_PATH}/_c_Pesi
 PESI_EXE=${PESI_PATH}/MAIN_Pesi.py
 
-VISUAL_PATH=${VISIR2_BASE_PATH}/Visualizzazioni
+VISUAL_PATH=${VISIR2_BASE_PATH}/_e_Visualizzazioni
 VISUAL_EXE=${VISUAL_PATH}/MAIN_OP.py
 
-CSV2SHAPE_PATH=${VISIR2_BASE_PATH}/
+CSV2SHAPE_PATH=${OPERATIONAL_SCRIPT_PATH}/
 CSV2SHAPE_EXE=${CSV2SHAPE_PATH}/csv2shape.sh
 
-LOCALLINK_PATH=${VISIR2_BASE_PATH}/
+LOCALLINK_PATH=${OPERATIONAL_SCRIPT_PATH}/
 LOCALLINK_EXE=${LOCALLINK_PATH}/localLink.sh
 
 POSTPROC_PATH=${VISIR2_BASE_PATH}/PostProc/
 POSTPROC_EXE=${POSTPROC_PATH}/MAIN_PostProc.py
 
-
-echo "_---------------------"
-echo "$APPNAME --- Inputs To add after "
-echo "_---------------------"
 
 
 ##########################################
@@ -68,7 +66,7 @@ echo "_---------------------"
 #
 ########################################## 
 
-source /work/opa/visir-dev/frame/operationalScript/utils.sh
+source /${OPERATIONAL_SCRIPT_PATH}/utils.sh
 
 
 ##########################################
@@ -107,7 +105,9 @@ RUNDATE=$1  #"20230202_04"
 COMP=$2
 
 APPNAME="[FrameSport]"
-
+echo "_---------------------"
+echo "$APPNAME --- Inputs To add after RUNDATE=$RUNDATE and COMPONENT=$COMP"
+echo "_---------------------"
 
 ##########################################
 #
@@ -122,12 +122,15 @@ if [[ -z $COMP ]] || [[ $COMP == "Campi" ]]; then
     # DATE=$(LANG=en_gb date +"%d%b%y")   
 
     comp_name="campi"
-    CAMPI_SEQ=3  # 3 run totali
+    CAMPI_SEQ=3 
     # invoke the job
     cd ${VISIR2_BASE_PATH}
     
     echo "$APPNAME ---  ${comp_name} launched"
-    CAMPI_JOBID=$(bsub -ptl 720 -q s_medium -P 0338 -J "FRM_Campi[1-${CAMPI_SEQ}]" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err "configfile=${CONF_PATH} python $CAMPI_EXE $RUNDATE ${LSB_JOBINDEX}" &)
+    
+    CAMPI_JOBID=$(bsub -ptl 720  -R "rusage[mem=0.8G]"  -q s_medium -P R000 -J "FRM_Campi[1-${CAMPI_SEQ}]" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err "configfile=${CONF_PATH} python $CAMPI_EXE $RUNDATE ${LSB_JOBINDEX}" &)
+    
+    #CAMPI_JOBID=$(bsub -ptl 720 -q s_medium -P 0338 -J "FRM_Campi[1-${CAMPI_SEQ}]" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err "configfile=${CONF_PATH} python $CAMPI_EXE $RUNDATE ${LSB_JOBINDEX}" &)
 
 fi
 
@@ -151,14 +154,14 @@ if [[ -z $COMP ]] || [[ $COMP == "Pesi" ]]; then
     if [[ $COMP == "Pesi" ]]; then
         echo "$APPNAME ---  Component ${comp_name} launched alone, without job dependency"
         # invoke the job
-        PESI_JOBID=$(bsub -ptl 720 -R "rusage[mem=6G]" -q s_medium -P 0338 -J "FRM_Pesi[1-${PESI_SEQ}]"  -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err "configfile=${CONF_PATH} python $PESI_EXE $RUNDATE ${LSB_JOBINDEX}" &)
+        PESI_JOBID=$(bsub -ptl 720 -R "rusage[mem=10G]" -q s_medium -P R000  -J "FRM_Pesi[1-${PESI_SEQ}]"  -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err "configfile=${CONF_PATH} python $PESI_EXE $RUNDATE ${LSB_JOBINDEX}" &)
 
     else 
         # invoke the job
         echo "$APPNAME ---  Component ${comp_name} launched with job dependency after CAMPI"
-        echo "bsub -ptl 720 -R \"rusage[mem=6G]\" -q s_medium -P 0338 -J \"FRM_Pesi[1-${PESI_SEQ}]\" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err \"configfile=${CONF_PATH} python $PESI_EXE $RUNDATE ${LSB_JOBINDEX}\""
+        echo "bsub -ptl 720 -R \"rusage[mem=10G]\" -q s_medium -P R000 -J \"FRM_Pesi[1-${PESI_SEQ}]\" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err \"configfile=${CONF_PATH} python $PESI_EXE $RUNDATE ${LSB_JOBINDEX}\""
 
-        PESI_JOBID=$(bsub -ptl 720 -R "rusage[mem=6G]" -q s_medium -P 0338 -J "FRM_Pesi[1-${PESI_SEQ}]" -w "done(${CAMPI_JOBID})" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err "configfile=${CONF_PATH} python $PESI_EXE $RUNDATE ${LSB_JOBINDEX}" &)
+        PESI_JOBID=$(bsub -ptl 720 -R "rusage[mem=10G]" -q s_medium -P R000 -J "FRM_Pesi[1-${PESI_SEQ}]" -w "done(${CAMPI_JOBID})" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err "configfile=${CONF_PATH} python $PESI_EXE $RUNDATE ${LSB_JOBINDEX}" &)
 
     fi 
 fi
@@ -186,13 +189,13 @@ if [[ -z $COMP ]] || [[ $COMP == "Tracce" ]]; then
         # TRACCE_JOBID=$(bsub  -R "rusage[mem=16G]" -q s_medium -P 0338 -J FRM_Tracce -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M).log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M).err  "configfile=${CONF_PATH} python $TRACCE_EXE $RUNDATE 0" &)
 
         # parallel
-        TRACCE_JOBID=$(bsub  -R "rusage[mem=16G]" -ptl 720 -q s_medium -P 0338 -J "FRM_Tracce[1-${TRACCE_SEQ}]" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err  "configfile=${CONF_PATH} python $TRACCE_EXE $RUNDATE ${LSB_JOBINDEX}" &)
+        TRACCE_JOBID=$(bsub  -R "rusage[mem=7G]" -ptl 720 -q s_medium -P R000  -J "FRM_Tracce[1-${TRACCE_SEQ}]" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err  "configfile=${CONF_PATH} python $TRACCE_EXE $RUNDATE ${LSB_JOBINDEX}" &)
     
     else
 	   
         echo "$APPNAME ---  Component ${comp_name} launched with job dependency after PESI"
-        echo "bsub -R rusage[mem=16G] -Is -q s_medium -ptl 720 -P 0338  -w \"done(${PESI_JOBID})\" -J \"FRM_Tracce[1-${TRACCE_SEQ}]\" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err  \"configfile=${CONF_PATH} python $TRACCE_EXE $RUNDATE  ${LSB_JOBINDEX}\""
-	    TRACCE_JOBID=$(bsub  -R "rusage[mem=16G]" -ptl 720 -q s_medium -P 0338  -w "done(${PESI_JOBID})" -J "FRM_Tracce[1-${TRACCE_SEQ}]" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err  "configfile=${CONF_PATH} python $TRACCE_EXE $RUNDATE  ${LSB_JOBINDEX}" &)
+        echo "bsub -R rusage[mem=7G] -q s_medium -ptl 720 -P R000  -w \"done(${PESI_JOBID})\" -J \"FRM_Tracce[1-${TRACCE_SEQ}]\" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err  \"configfile=${CONF_PATH} python $TRACCE_EXE $RUNDATE  ${LSB_JOBINDEX}\""
+	    TRACCE_JOBID=$(bsub  -R "rusage[mem=7G]" -ptl 720 -q s_medium -P R000  -w "done(${PESI_JOBID})" -J "FRM_Tracce[1-${TRACCE_SEQ}]" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err  "configfile=${CONF_PATH} python $TRACCE_EXE $RUNDATE  ${LSB_JOBINDEX}" &)
 
     fi    
     
@@ -214,13 +217,13 @@ if [[ -z $COMP ]] || [[ $COMP == "Visualizzazioni" ]]; then
     
     if [[ $COMP == "Visualizzazioni" ]]; then
 	    echo "$APPNAME ---  Component $COMP launched alone, without job dependency"
-	    VISUAL_JOBID=$(bsub -R "rusage[mem=16G]" -ptl 720 -q s_long -P 0338  -J "FRM_Vis[1-${VISUAL_SEQ}]" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err  "configfile=${CONF_PATH} python $VISUAL_EXE $RUNDATE ${LSB_JOBINDEX}" &)
+	    VISUAL_JOBID=$(bsub -R "rusage[mem=7.5G]" -ptl 720 -q s_long -P R000  -J "FRM_Vis[1-${VISUAL_SEQ}]" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err  "configfile=${CONF_PATH} python $VISUAL_EXE $RUNDATE ${LSB_JOBINDEX}" &)
 	
     else
 	   
         echo "$APPNAME ---  Component ${comp_name} launched with job dependency after TRACCE"
-        echo "bsub  -ptl 720 -q s_long -P 0338  -w \"done(${TRACCE_JOBID})\" -J \"FRM_Vis[1-${VISUAL_SEQ}]\" -o ${LOGS_PATH}/out/visual_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/visual_$(date +%Y%m%d-%H%M)_%J.err  \"configfile=${CONF_PATH} python $VISUAL_EXE $RUNDATE  ${LSB_JOBINDEX}\""
-	    VISUAL_JOBID=$(bsub -R "rusage[mem=16G]" -ptl 720 -q s_long -P 0338  -w "done(${TRACCE_JOBID})" -J "FRM_Vis[1-${VISUAL_SEQ}]" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err  "configfile=${CONF_PATH} python $VISUAL_EXE $RUNDATE  ${LSB_JOBINDEX}" &)
+        echo "bsub  -ptl 720 -q s_long -P R000  -w \"done(${TRACCE_JOBID})\" -J \"FRM_Vis[1-${VISUAL_SEQ}]\" -o ${LOGS_PATH}/out/visual_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/visual_$(date +%Y%m%d-%H%M)_%J.err  \"configfile=${CONF_PATH} python $VISUAL_EXE $RUNDATE  ${LSB_JOBINDEX}\""
+	    VISUAL_JOBID=$(bsub -R "rusage[mem=7.5G]" -ptl 720 -q s_long -P R000  -w "done(${TRACCE_JOBID})" -J "FRM_Vis[1-${VISUAL_SEQ}]" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err  "configfile=${CONF_PATH} python $VISUAL_EXE $RUNDATE  ${LSB_JOBINDEX}" &)
 
     fi    
     
@@ -241,13 +244,13 @@ if [[ -z $COMP ]] || [[ $COMP == "Postproc" ]]; then
     
     if [[ $COMP == "Postproc" ]]; then
 	    echo "$APPNAME ---  Component $COMP launched alone, without job dependency"
-	    POSTPROC_JOBID=$(bsub -ptl 720 -q s_short -P 0338  -J FRM_post -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M).log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M).err  "configfile=${CONF_PATH} python $POSTPROC_EXE $RUNDATE" &)
+	    POSTPROC_JOBID=$(bsub -ptl 720 -R "rusage[mem=1G]" -q s_short -P R000  -J FRM_post -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M).log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M).err  "configfile=${CONF_PATH} python $POSTPROC_EXE $RUNDATE" &)
 	
     else
 	   
         echo "$APPNAME ---  Component ${comp_name} launched with job dependency after TRACCE"
-        echo "bsub  -ptl 720 -q s_short -P 0338  -w \"done(${TRACCE_JOBID})\" -J FRM_post -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M).log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M).err  \"configfile=${CONF_PATH} python $POSTPROC_EXE $RUNDATE \""
-	    POSTPROC_JOBID=$(bsub -ptl 720 -q s_short -P 0338  -w "done(${TRACCE_JOBID})" -J FRM_post -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M).log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M).err  "configfile=${CONF_PATH} python $POSTPROC_EXE $RUNDATE" &)
+        echo "bsub  -ptl 720 -q s_short -P R000  -w \"done(${TRACCE_JOBID})\" -J FRM_post -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M).log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M).err  \"configfile=${CONF_PATH} python $POSTPROC_EXE $RUNDATE \""
+	    POSTPROC_JOBID=$(bsub -ptl 720 -R "rusage[mem=1G]"  -q s_short -P R000  -w "done(${TRACCE_JOBID})" -J FRM_post -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M).log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M).err  "configfile=${CONF_PATH} python $POSTPROC_EXE $RUNDATE" &)
 
     fi    
     
@@ -270,12 +273,12 @@ if [[ -z $COMP ]] || [[ $COMP == "localLink.sh" ]]; then
 	
 	# submit the job without job dependency since
 	# we only want to run localLink.sh
-	LOCALLINK_JOBID=$(bsub -ptl 720 -R "span[ptile=1]" -q s_medium -P 0338 -o ${OP_PATH}/logs/out/localLink_$(date +%Y%m%d-%H%M)_%J.out -e ${OP_PATH}/logs/err/localLink_$(date +%Y%m%d-%H%M)_%J.err -J 'FRM_localLink' "sh ${LOCALLINK_EXE} ${RUNDATE}" &)	
+	LOCALLINK_JOBID=$(bsub -ptl 720 -R "rusage[mem=1G]" -q s_medium -P R000 -o ${LOGS_PATH}/out/localLink_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/localLink_$(date +%Y%m%d-%H%M)_%J.err -J 'FRM_localLink' "sh ${LOCALLINK_EXE} ${RUNDATE}" &)	
 	
     else
 	
 	# invoke the job
-	LOCALLINK_JOBID=$(bsub -ptl 720 -R "span[ptile=1]" -q s_medium -P 0338 -w "done($VISUAL_JOBID)" -o ${OP_PATH}/logs/out/localLink_$(date +%Y%m%d-%H%M)_%J.out -e ${OP_PATH}/logs/err/localLink_$(date +%Y%m%d-%H%M)_%J.err -J 'FRM_localLink' "sh ${LOCALLINK_EXE} ${RUNDATE}" &)	
+	LOCALLINK_JOBID=$(bsub -ptl 720 -R "rusage[mem=1G]" -q s_medium -P R000 -w "done($VISUAL_JOBID)" -o ${LOGS_PATH}/out/localLink_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/localLink_$(date +%Y%m%d-%H%M)_%J.err -J 'FRM_localLink' "sh ${LOCALLINK_EXE} ${RUNDATE}" &)	
 	
     fi
 fi
@@ -296,12 +299,12 @@ if [[ -z $COMP ]] || [[ $COMP == "csv2shape.sh" ]]; then
     
 	# Submit csv2shape job array without job dependencies
 	# since we only want csv2shape 
-	CSV_JOBID=$(bsub -ptl 720 -R "span[ptile=1]" -q s_long -P 0338 -J 'FRM_csv2shape' -o ${OP_PATH}/logs/out/csv2shape_$(date +%Y%m%d-%H%M)_%J.log -e ${OP_PATH}/logs/err/csv2shape_$(date +%Y%m%d-%H%M)_%J.err "sh ${CSV2SHAPE_EXE} $RUNDATE" &)
+	CSV_JOBID=$(bsub -ptl 720 -R "rusage[mem=0.05G]" -q s_long -P R000  -J 'FRM_csv2shape' -o ${LOGS_PATH}/out/csv2shape_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/csv2shape_$(date +%Y%m%d-%H%M)_%J.err "sh ${CSV2SHAPE_EXE} $RUNDATE" &)
 	
     else
 
 	# Submit csv2shape job array
-	CSV_JOBID=$(bsub -ptl 720 -R "span[ptile=1]" -q s_long -P 0338 -w "done($LOCALLINK_JOBID)" -J 'FRM_csv2shape' -o ${OP_PATH}/logs/out/csv2shape_$(date +%Y%m%d-%H%M)_%J.log -e ${OP_PATH}/logs/err/csv2shape_$(date +%Y%m%d-%H%M)_%J.err "sh ${CSV2SHAPE_EXE} $RUNDATE" &)
+	CSV_JOBID=$(bsub -ptl 720 -R "rusage[mem=0.05G]" -q s_long -P R000 -w "done($LOCALLINK_JOBID)" -J 'FRM_csv2shape' -o ${LOGS_PATH}/out/csv2shape_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/csv2shape_$(date +%Y%m%d-%H%M)_%J.err "sh ${CSV2SHAPE_EXE} $RUNDATE" &)
 
     fi
 fi
