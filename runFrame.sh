@@ -129,8 +129,6 @@ if [[ -z $COMP ]] || [[ $COMP == "Campi" ]]; then
     echo "$APPNAME ---  ${comp_name} launched"
     
     CAMPI_JOBID=$(bsub -ptl 720  -R "rusage[mem=0.8G]"  -q s_medium -P R000 -J "FRM_Campi[1-${CAMPI_SEQ}]" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err "configfile=${CONF_PATH} python $CAMPI_EXE $RUNDATE ${LSB_JOBINDEX}" &)
-    
-    #CAMPI_JOBID=$(bsub -ptl 720 -q s_medium -P 0338 -J "FRM_Campi[1-${CAMPI_SEQ}]" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err "configfile=${CONF_PATH} python $CAMPI_EXE $RUNDATE ${LSB_JOBINDEX}" &)
 
 fi
 
@@ -244,13 +242,13 @@ if [[ -z $COMP ]] || [[ $COMP == "Postproc" ]]; then
     
     if [[ $COMP == "Postproc" ]]; then
 	    echo "$APPNAME ---  Component $COMP launched alone, without job dependency"
-	    POSTPROC_JOBID=$(bsub -ptl 720 -R "rusage[mem=1G]" -q s_short -P R000  -J FRM_post -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M).log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M).err  "configfile=${CONF_PATH} python $POSTPROC_EXE $RUNDATE" &)
+	    POSTPROC_JOBID=$(bsub -ptl 720 -R "rusage[mem=1G]" -q s_short -P R000  -J FRM_post -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err  "configfile=${CONF_PATH} python $POSTPROC_EXE $RUNDATE" &)
 	
     else
 	   
         echo "$APPNAME ---  Component ${comp_name} launched with job dependency after TRACCE"
-        echo "bsub  -ptl 720 -q s_short -P R000  -w \"done(${TRACCE_JOBID})\" -J FRM_post -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M).log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M).err  \"configfile=${CONF_PATH} python $POSTPROC_EXE $RUNDATE \""
-	    POSTPROC_JOBID=$(bsub -ptl 720 -R "rusage[mem=1G]"  -q s_short -P R000  -w "done(${TRACCE_JOBID})" -J FRM_post -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M).log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M).err  "configfile=${CONF_PATH} python $POSTPROC_EXE $RUNDATE" &)
+        echo "bsub  -ptl 720 -q s_short -P R000  -w \"done(${TRACCE_JOBID})\" -J FRM_post -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err  \"configfile=${CONF_PATH} python $POSTPROC_EXE $RUNDATE \""
+	    POSTPROC_JOBID=$(bsub -ptl 720 -R "rusage[mem=1G]"  -q s_short -P R000  -w "done(${TRACCE_JOBID})" -J FRM_post -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err  "configfile=${CONF_PATH} python $POSTPROC_EXE $RUNDATE" &)
 
     fi    
     
@@ -273,12 +271,12 @@ if [[ -z $COMP ]] || [[ $COMP == "localLink.sh" ]]; then
 	
 	# submit the job without job dependency since
 	# we only want to run localLink.sh
-	LOCALLINK_JOBID=$(bsub -ptl 720 -R "rusage[mem=1G]" -q s_medium -P R000 -o ${LOGS_PATH}/out/localLink_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/localLink_$(date +%Y%m%d-%H%M)_%J.err -J 'FRM_localLink' "sh ${LOCALLINK_EXE} ${RUNDATE}" &)	
+	LOCALLINK_JOBID=$(bsub -ptl 720 -R "rusage[mem=1G]" -q s_medium -P R000 -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err -J 'FRM_localLink' "sh ${LOCALLINK_EXE} ${RUNDATE}" &)	
 	
     else
 	
 	# invoke the job
-	LOCALLINK_JOBID=$(bsub -ptl 720 -R "rusage[mem=1G]" -q s_medium -P R000 -w "done($VISUAL_JOBID)" -o ${LOGS_PATH}/out/localLink_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/localLink_$(date +%Y%m%d-%H%M)_%J.err -J 'FRM_localLink' "sh ${LOCALLINK_EXE} ${RUNDATE}" &)	
+	LOCALLINK_JOBID=$(bsub -ptl 720 -R "rusage[mem=1G]" -q s_medium -P R000 -w "done($VISUAL_JOBID)" -o ${LOGS_PATH}/out/${comp_name}_$(date +%Y%m%d-%H%M)_%J.log -e ${LOGS_PATH}/err/${comp_name}_$(date +%Y%m%d-%H%M)_%J.err -J 'FRM_localLink' "sh ${LOCALLINK_EXE} ${RUNDATE}" &)	
 	
     fi
 fi
